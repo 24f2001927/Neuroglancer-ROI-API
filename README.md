@@ -83,7 +83,7 @@ Invoke-RestMethod -Uri "http://localhost:8000/load" -Method Post -ContentType "a
 ```
 ---
 ### Script.py 
-** If you want to host your own files in a folder called MyFolder **
+**If you want to host your own files in a folder called MyFolder**
 ```python
 import http.server
 import os
@@ -136,7 +136,7 @@ with socketserver.TCPServer(("", PORT), CustomHandler) as httpd:
     except KeyboardInterrupt:
         print("\nServer stopped.")
 ```
-** Save it as script.py and run it via Terminal **
+**Save it as script.py and run it via Terminal**
 ```powershell
 python script.py
 ```
