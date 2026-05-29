@@ -20,16 +20,17 @@ The primary goal of this tool is to simplify the process of "snipping" small vol
 
 ```mermaid
 graph TD
-    A[Start app.py] --> B[POST /load {url}]
-    B --> C[Initialize CloudVolume & Neuroglancer]
-    C --> D
-    D -- "POST /extract {x,y,z}" --> E
-    E --> F[Calculate Bounding Box]
-    F --> G[Download Chunk via CloudVolume]
-    G --> H[Save roi_*.npy to Disk]
-    H --> I[Inject 'Extracted_ROI' Layer into Viewer]
-    I --> J[Open viewer.ipynb]
-    J --> K[Interactive Slice Inspection]
+    Start["python app.py"] --> Load_Dataset["POST /load"]
+    Load_Dataset --> CV_Viewer_Init["CloudVolume & Viewer Setup"]
+    CV_Viewer_Init --> Trigger{Trigger}
+    Trigger -- "REST API" --> Trigger_Extraction["POST /extract"]
+    Trigger -- "Hot-Key 'x'" --> On_Key_Action["on_key_action"]
+    Trigger_Extraction --> Core_Logic["extract_and_save_roi"]
+    On_Key_Action --> Core_Logic
+    Core_Logic --> Bbox["Calculate Bbox"]
+    Core_Logic --> Download["cv[request_bbox] Download"]
+    Core_Logic --> Save["np.save (roi_*.npy)"]
+    Core_Logic --> Layer_Injection["Inject 'Extracted_ROI' Layer"]
 ```
 
 ---
