@@ -79,9 +79,68 @@ Invoke-RestMethod -Uri "http://localhost:8000/load" -Method Post -ContentType "a
 
 **Local/Remote Zarr:**
 ```powershell
-Invoke-RestMethod -Uri "http://localhost:8000/load" -Method Post -ContentType "application/json" -Body '{"url": "http://172.20.23.241:10229/421.zarr/s4/"}'
+Invoke-RestMethod -Uri "http://localhost:8000/load" -Method Post -ContentType "application/json" -Body '{"url": "http://localhost:8080/volume.zarr/s4/"}'
 ```
+---
+### Script.py 
+** If you want to host your own files in a folder called MyFolder **
+```python
+import http.server
+import os
+import socketserver
 
+# --- Configuration ---
+PORT = 8080
+
+# Replace this with the path of the folder you want to show
+# Example (Windows): r"C:\Users\YourName\Documents\MyFolder"
+# Example (Mac/Linux): "/home/yourname/Documents/MyFolder"
+DIRECTORY = "path/to/MyFolder"
+import sys
+from http.server import SimpleHTTPRequestHandler, HTTPServer
+
+class SafeHTTPRequestHandler(SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory=DIRECTORY, **kwargs)
+
+    # Override handle_error to suppress BrokenPipeError tracebacks
+    def handle_error(self, request, client_address):
+        exc_type, exc_value, _ = sys.exc_info()
+        if exc_type is BrokenPipeError:
+            # Quietly log a short note instead of the full traceback
+            print(f"Client {client_address} disconnected prematurely (Broken Pipe).")
+        else:
+            # Let all other legitimate errors print normally
+            super().handle_error(request, client_address)
+
+# Your server startup code below...
+
+class CustomHandler(http.server.SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        # Tell the handler to serve the specific directory
+        super().__init__(*args, directory=DIRECTORY, **kwargs)
+
+    # Adding CORS headers so your webpage can embed or fetch this without security blocks
+    def end_headers(self):
+        self.send_header("Access-Control-Allow-Origin", "*")
+        super().end_headers()
+
+
+# Set up and start the server
+with socketserver.TCPServer(("", PORT), CustomHandler) as httpd:
+    print(f"Server started!")
+    print(f"Serving folder: {DIRECTORY}")
+    print(f"View it at: http://0.0.0.0:{PORT}")
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print("\nServer stopped.")
+```
+** Save it as script.py and run it via Terminal **
+```powershell
+python script.py
+```
+---
 ### 3. Extract an ROI
 You can trigger an extraction programmatically via PowerShell:
 
